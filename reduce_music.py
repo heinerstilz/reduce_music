@@ -1,4 +1,15 @@
 #!/usr/bin/python
+# reduce_music.py
+# assuming you are in your home directory on OS X,
+# converts all music in Music/iTunes to smaller AAC files
+# into Music/Smaller, preserving directory structure
+# and of course the original files.
+# Three CPU cores are used (why only three?)
+# Files with a bitrate <= 130 kbps are not converted.
+#
+# Options:
+# -n : simulate only, do not convert any files.
+
 from __future__ import print_function
 import multiprocessing
 import os
@@ -7,6 +18,7 @@ import shutil
 import subprocess
 import sys
 
+# just to get more distinct feedback when something goes wrong
 class NotAMusicFileException(Exception):
     pass
 
@@ -21,28 +33,25 @@ def needs_converting(in_file):
     aifinfo_output = subprocess.check_output(['afinfo', in_file])
     pattern = 'bit rate: ([0-9]+) bits per second'
     return int(re.search(pattern, aifinfo_output).group(1)) > 130000 
-#    if in_file.endswith('.mp3'):
-#        return False
-#    if in_file.endswith(('.wav', '.aif')):
-#        return True
-#    print('calling afinfo on %s' % in_file)
-#    aifinfo_output = subprocess.check_output(['afinfo', in_file]).splitlines()
-#    codec_line = next(l for l in aifinfo_output
-#            if l.startswith('Data format'))
-#    return any(codec_line.find(x) >= 0 for x in ("'alac'", "'lpcm'"))
 
 def map_to_pool(func, data):
-    pool = multiprocessing.Pool(3)
+    pool = multiprocessing.Pool(3) # why not use all cores?
     results = pool.map(func, data)
     pool.close()
     pool.join()
     return results
 
+
+# main function is definitely too long and hard to read with interleaved
+# function defs and other statements. I should split that up
 if __name__ == '__main__':
+
+    # global constants - TODO: give user an option to select dirs
     music_dir = 'Music/iTunes'
     music_extensions = ('.mp3', '.m4a', '.wav', '.aif')
     target_dir = 'Music/Smaller'
     
+    # global mutable lists? ugly...
     music_files = []
     subdirs_to_create = []
     
@@ -107,7 +116,9 @@ if __name__ == '__main__':
 
     [run_or_simulate(os.makedirs, d) for d in dirs_to_create]
     [run_or_simulate(shutil.copy, *p) for p in copy_infiles_outfiles]
-
+    
+    # uses Apple's afconvert command line utility to convert an audio
+    # file to an intermediate file, and then to an AAC result file.
     def convert_files(in_file, out_file, intermediate_file):
         try:
             print('calling afconvert on %s' % in_file)
