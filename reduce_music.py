@@ -78,42 +78,49 @@ def convert_files(in_file, out_file, intermediate_file):
 def convert_files_l(args):
     return convert_files(*args)
     
-def analyze_directory_structure(source_dir):
-    music_files = []
-    subdirs_to_create = []
-    for my_dir, subdirs, files in os.walk(source_dir):
+
+class PathCalcualtor:
+    def __init__(self):
+        # global constants - TODO: give user an option to select dirs
+        self.music_dir = 'Music/iTunes'
+        self.music_extensions = ('.mp3', '.m4a', '.wav', '.aif')
+        self.target_dir = 'Music/Smaller'
     
-        if my_dir.find('Podcasts') >= 0:
-            continue
-        in_files = [os.path.join(my_dir, f) for f in files
-                if f.lower().endswith(music_extensions)]
-        if in_files:
-            music_files += in_files
-            subdirs_to_create.append(my_dir)
-    return music_files, subdirs_to_create
-    
+    @staticmethod
+    def to_m4a_filename(path):
+        (root, ext) = os.path.splitext(path)
+        return root + '.m4a'
+
+    def join_to_target(self, f):
+        return os.path.join(self.target_dir, f)
+
+    def analyze_directory_structure(self, source_dir):
+        music_files = []
+        subdirs_to_create = []
+        for my_dir, subdirs, files in os.walk(source_dir):
+        
+            if my_dir.find('Podcasts') >= 0:
+                continue
+            in_files = [os.path.join(my_dir, f) for f in files
+                    if f.lower().endswith(self.music_extensions)]
+            if in_files:
+                music_files += in_files
+                subdirs_to_create.append(my_dir)
+        return music_files, subdirs_to_create
+
 
 # main function is definitely too long and hard to read with interleaved
 # function defs and other statements. I should split that up
 if __name__ == '__main__':
 
-    # global constants - TODO: give user an option to select dirs
-    music_dir = 'Music/iTunes'
-    music_extensions = ('.mp3', '.m4a', '.wav', '.aif')
-    target_dir = 'Music/Smaller'
-    
-    music_files, subdirs_to_create = analyze_directory_structure(music_dir)
+    path_calc = PathCalcualtor()
+    music_files, subdirs_to_create = path_calc.analyze_directory_structure(
+            music_dir)
   
-    def to_m4a_filename(path):
-        (root, ext) = os.path.splitext(path)
-        return root + '.m4a'
-
-    def join_to_target(f):
-        return os.path.join(target_dir, f)
-
     new_music_files = [f[0] for f in
-        zip(music_files, [join_to_target(f) for f in music_files],
-        [join_to_target(to_m4a_filename(f)) for f in music_files])
+        zip(music_files, [path_calc.join_to_target(f) for f in music_files],
+        [path_calc.join_to_target(path_calc.to_m4a_filename(f))
+            for f in music_files])
         if not any((os.path.exists(x) for x in f[1:]))]
 
     results = map_to_pool(needs_converting, new_music_files)
@@ -125,12 +132,12 @@ if __name__ == '__main__':
         if not in_file.lower().endswith(music_extensions):
             raise NotAMusicFileException()
         if in_file in files_to_convert:
-            return to_m4a_filename(in_file)
+            return path_calc.to_m4a_filename(in_file)
         else:
             return in_file
     
     def get_target_outfiles_for(l):
-        return [join_to_target(get_outfile_for(f)) for f in l]
+        return [path_calc.join_to_target(get_outfile_for(f)) for f in l]
 
     def strip_existing_targets(in_list):
         return [x for x in in_list if not os.path.isfile(list(x)[1])]
@@ -141,7 +148,8 @@ if __name__ == '__main__':
     # intermediate files are stored here.
     temp_dir = os.path.join(target_dir, 'tmp')
 
-    dirs_to_create = [x for x in map(join_to_target, subdirs_to_create)
+    dirs_to_create = [x for x in map(
+        path_calc.join_to_target, subdirs_to_create)
             + [temp_dir] if not os.path.isdir(x)]
     
     intermediate_files = [os.path.join(temp_dir,
