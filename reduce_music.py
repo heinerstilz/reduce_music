@@ -28,6 +28,10 @@ def run_or_simulate(cmd, *args):
     else:
         cmd(*args)
 
+# uses Apple's afinfo utility and parses its output to
+# decide whether an audio file's output has a bitrate
+# large enough to justify converting.
+# TODO: decorate for multiprocessing
 def needs_converting(in_file):
     print('calling afinfo on %s' % in_file)
     aifinfo_output = subprocess.check_output(['afinfo', in_file])
@@ -69,6 +73,8 @@ def convert_files(in_file, out_file, intermediate_file):
             return e
     return None
 
+# TODO: decorate for multiprocessing
+# nest convert_files
 def convert_files_l(args):
     return convert_files(*args)
     
