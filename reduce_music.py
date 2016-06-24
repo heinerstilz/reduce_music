@@ -41,6 +41,48 @@ def map_to_pool(func, data):
     pool.join()
     return results
 
+# uses Apple's afconvert command line utility to convert an audio
+# file to an intermediate file, and then to an AAC result file.
+def convert_files(in_file, out_file, intermediate_file):
+    try:
+        print('calling afconvert on %s' % in_file)
+        [run_or_simulate(x, y) for x, y in (
+            (subprocess.check_call, ['afconvert', in_file,
+            intermediate_file, '-d', '0', '-f', 'caff',
+            '--soundcheck-generate']),
+
+            (subprocess.check_call, ['afconvert', intermediate_file,
+            '-d', 'aach', '-f', 'm4af', '--soundcheck-read',
+            '-b', '80000', '-q', '127', '-s', '2', out_file]),
+
+            (os.remove, intermediate_file))]
+    except subprocess.CalledProcessError as e:
+        print('afconvert first run failed.')
+        try:
+            run_or_simulate(subprocess.check_call, ['afconvert', in_file,
+                out_file, '-d', 'aach', '-f', 'm4af',
+                '-b', '80000', '-q', '127', '-s', '2'])
+        except Exception as e:
+            return e
+    return None
+
+def convert_files_triple(args):
+    return convert_files(*args)
+    
+def analyze_directory_structure(source_dir):
+    music_files = []
+    subdirs_to_create = []
+    for my_dir, subdirs, files in os.walk(source_dir):
+    
+        if my_dir.find('Podcasts') >= 0:
+            continue
+        in_files = [os.path.join(my_dir, f) for f in files
+                if f.lower().endswith(music_extensions)]
+        if in_files:
+            music_files += in_files
+            subdirs_to_create.append(my_dir)
+    return music_files, subdirs_to_create
+    
 
 # main function is definitely too long and hard to read with interleaved
 # function defs and other statements. I should split that up
@@ -51,19 +93,7 @@ if __name__ == '__main__':
     music_extensions = ('.mp3', '.m4a', '.wav', '.aif')
     target_dir = 'Music/Smaller'
     
-    # global mutable lists? ugly...
-    music_files = []
-    subdirs_to_create = []
-    
-    for my_dir, subdirs, files in os.walk(music_dir):
-    
-        if my_dir.find('Podcasts') >= 0:
-            continue
-        in_files = [os.path.join(my_dir, f) for f in files
-                if f.lower().endswith(music_extensions)]
-        if in_files:
-            music_files += in_files
-            subdirs_to_create.append(my_dir)
+    music_files, subdirs_to_create = analyze_directory_structure(music_dir)
   
     def getm4afile(f):
         (root, ext) = os.path.splitext(f)
@@ -113,38 +143,8 @@ if __name__ == '__main__':
             zip(files_to_convert,
                 get_target_outfiles_for(files_to_convert), intermediate_files))
     
-
-
     [run_or_simulate(os.makedirs, d) for d in dirs_to_create]
     [run_or_simulate(shutil.copy, *p) for p in copy_infiles_outfiles]
-    
-    # uses Apple's afconvert command line utility to convert an audio
-    # file to an intermediate file, and then to an AAC result file.
-    def convert_files(in_file, out_file, intermediate_file):
-        try:
-            print('calling afconvert on %s' % in_file)
-            [run_or_simulate(x, y) for x, y in (
-                (subprocess.check_call, ['afconvert', in_file,
-                intermediate_file, '-d', '0', '-f', 'caff',
-                '--soundcheck-generate']),
-    
-                (subprocess.check_call, ['afconvert', intermediate_file,
-                '-d', 'aach', '-f', 'm4af', '--soundcheck-read',
-                '-b', '80000', '-q', '127', '-s', '2', out_file]),
-    
-                (os.remove, intermediate_file))]
-        except subprocess.CalledProcessError as e:
-            print('afconvert first run failed.')
-            try:
-                run_or_simulate(subprocess.check_call, ['afconvert', in_file,
-                    out_file, '-d', 'aach', '-f', 'm4af',
-                    '-b', '80000', '-q', '127', '-s', '2'])
-            except Exception as e:
-                return e
-        return None
-    
-    def convert_files_triple(args):
-        return convert_files(*args)
     
     results = map_to_pool(convert_files_triple, convert_in_out_intermediate_files)
     
