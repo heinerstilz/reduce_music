@@ -66,7 +66,7 @@ def convert_files(in_file, out_file, intermediate_file):
             return e
     return None
 
-def convert_files_triple(args):
+def convert_files_l(args):
     return convert_files(*args)
     
 def analyze_directory_structure(source_dir):
@@ -95,8 +95,8 @@ if __name__ == '__main__':
     
     music_files, subdirs_to_create = analyze_directory_structure(music_dir)
   
-    def getm4afile(f):
-        (root, ext) = os.path.splitext(f)
+    def to_m4a_filename(path):
+        (root, ext) = os.path.splitext(path)
         return root + '.m4a'
 
     def join_to_target(f):
@@ -104,7 +104,7 @@ if __name__ == '__main__':
 
     new_music_files = [f[0] for f in
         zip(music_files, [join_to_target(f) for f in music_files],
-        [join_to_target(getm4afile(f)) for f in music_files])
+        [join_to_target(to_m4a_filename(f)) for f in music_files])
         if not any((os.path.exists(x) for x in f[1:]))]
 
     results = map_to_pool(needs_converting, new_music_files)
@@ -116,7 +116,7 @@ if __name__ == '__main__':
         if not in_file.lower().endswith(music_extensions):
             raise NotAMusicFileException()
         if in_file in files_to_convert:
-            return getm4afile(in_file)
+            return to_m4a_filename(in_file)
         else:
             return in_file
     
@@ -146,7 +146,7 @@ if __name__ == '__main__':
     [run_or_simulate(os.makedirs, d) for d in dirs_to_create]
     [run_or_simulate(shutil.copy, *p) for p in copy_infiles_outfiles]
     
-    results = map_to_pool(convert_files_triple, convert_in_out_intermediate_files)
+    results = map_to_pool(convert_files_l, convert_in_out_intermediate_files)
     
     print('%d files copied - %d files converted.'
             %(len(copy_infiles_outfiles), len(convert_in_out_intermediate_files)))
