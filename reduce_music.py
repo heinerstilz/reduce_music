@@ -5,7 +5,7 @@
 # into Music/Smaller, preserving directory structure
 # and of course the original files.
 # Three CPU cores are used (why only three?)
-# Files with a bitrate <= 130 kbps are not converted.
+# Files with a bitrate <= 130 kbps are not converted but copied.
 #
 # Options:
 # -n : simulate only, do not convert any files.
@@ -99,6 +99,7 @@ if __name__ == '__main__':
     copy_infiles_outfiles = strip_existing_targets(
             zip(files_to_copy, get_target_outfiles_for(files_to_copy)))
 
+    # intermediate files are stored here.
     temp_dir = os.path.join(target_dir, 'tmp')
 
     dirs_to_create = [x for x in map(join_to_target, subdirs_to_create)
