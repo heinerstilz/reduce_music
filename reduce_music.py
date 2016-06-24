@@ -62,6 +62,9 @@ def convert_files(in_file, out_file, intermediate_file):
             run_or_simulate(subprocess.check_call, ['afconvert', in_file,
                 out_file, '-d', 'aach', '-f', 'm4af',
                 '-b', '80000', '-q', '127', '-s', '2'])
+        # why catch all exceptions here and only one above?
+        # No exception should leace this function, as it's
+        # supposed to run within a multiprocessing pool
         except Exception as e:
             return e
     return None
