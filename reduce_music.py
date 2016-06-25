@@ -149,10 +149,6 @@ class PathCalcualtor:
                 for f in music_files])
             if not any((os.path.exists(x) for x in f[1:]))]
 
-    @staticmethod
-    def strip_existing_targets(in_list):
-        return [x for x in in_list if not os.path.isfile(list(x)[1])]
-   
 
 # main function is definitely too long and hard to read with interleaved
 # function defs and other statements. I should split that up
@@ -169,17 +165,15 @@ if __name__ == '__main__':
     files_to_convert = [f[1] for f in zip(results, new_music_files) if f[0]]
     files_to_copy = [f for f in new_music_files if not f in files_to_convert]
     
-    copy_infiles_outfiles = path_calc.strip_existing_targets(
-            zip(files_to_copy, path_calc.get_target_outfiles_for(
-                files_to_copy, files_to_convert)))
+    copy_infiles_outfiles = zip(files_to_copy, path_calc.get_target_outfiles_for(
+                files_to_copy, files_to_convert))
 
     intermediate_files = path_calc.calc_intermediate_files(
             len(files_to_convert))
 
-    convert_in_out_intermediate_files = path_calc.strip_existing_targets(
-            zip(files_to_convert,
+    convert_in_out_intermediate_files = zip(files_to_convert,
                 path_calc.get_target_outfiles_for(files_to_convert, files_to_convert),
-                intermediate_files))
+                intermediate_files)
 
     dirs_to_create = path_calc.calc_dirs_to_create(subdirs)
     
