@@ -133,6 +133,15 @@ class PathCalcualtor:
         return [self.join_to_target(self.get_outfile_for(f, files_to_convert))
                 for f in l]
 
+    def calc_dirs_to_create(self, subdirs):
+        all_dirs = [x for x in map(self.join_to_target, subdirs)
+                + [self.temp_dir]]
+        return [x for x in all_dirs if not os.path.isdir(x)]
+
+    def calc_intermediate_files(self, num):
+        return [os.path.join(self.temp_dir, 'intermediate%d.caf' % id_number)
+                for id_number in range(num)]
+
     @staticmethod
     def strip_existing_targets(in_list):
         return [x for x in in_list if not os.path.isfile(list(x)[1])]
@@ -143,7 +152,7 @@ class PathCalcualtor:
 if __name__ == '__main__':
 
     path_calc = PathCalcualtor()
-    music_files, subdirs_to_create = path_calc.analyze_directory_structure()
+    music_files, subdirs = path_calc.analyze_directory_structure()
   
     # files that seem to have been added to the library since the last run
     new_music_files = [f[0] for f in
@@ -161,18 +170,15 @@ if __name__ == '__main__':
             zip(files_to_copy, path_calc.get_target_outfiles_for(
                 files_to_copy, files_to_convert)))
 
-    dirs_to_create = [x for x in map(
-        path_calc.join_to_target, subdirs_to_create)
-            + [path_calc.temp_dir] if not os.path.isdir(x)]
-    
-    intermediate_files = [os.path.join(path_calc.temp_dir,
-        'intermediate%d.caf' % id_number)
-        for id_number in range(len(files_to_convert))]
+    intermediate_files = path_calc.calc_intermediate_files(
+            len(files_to_convert))
 
     convert_in_out_intermediate_files = path_calc.strip_existing_targets(
             zip(files_to_convert,
                 path_calc.get_target_outfiles_for(files_to_convert, files_to_convert),
                 intermediate_files))
+
+    dirs_to_create = path_calc.calc_dirs_to_create(subdirs)
     
     [run_or_simulate(os.makedirs, d) for d in dirs_to_create]
     [run_or_simulate(shutil.copy, *p) for p in copy_infiles_outfiles]
