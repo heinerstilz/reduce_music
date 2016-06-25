@@ -98,10 +98,10 @@ class PathCalcualtor:
     def join_to_target(self, f):
         return os.path.join(self.target_dir, f)
 
-    def analyze_directory_structure(self, source_dir):
+    def analyze_directory_structure(self):
         music_files = []
         subdirs_to_create = []
-        for my_dir, subdirs, files in os.walk(source_dir):
+        for my_dir, subdirs, files in os.walk(self.music_dir):
         
             if my_dir.find('Podcasts') >= 0:
                 continue
@@ -134,9 +134,9 @@ class PathCalcualtor:
 if __name__ == '__main__':
 
     path_calc = PathCalcualtor()
-    music_files, subdirs_to_create = path_calc.analyze_directory_structure(
-            music_dir)
+    music_files, subdirs_to_create = path_calc.analyze_directory_structure()
   
+    # files that seem to have been added to the library since the last run
     new_music_files = [f[0] for f in
         zip(music_files, [path_calc.join_to_target(f) for f in music_files],
         [path_calc.join_to_target(path_calc.to_m4a_filename(f))
