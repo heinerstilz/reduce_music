@@ -188,6 +188,6 @@ if __name__ == '__main__':
     print('%d files copied - %d files converted.'
             %(len(copy_infiles_outfiles), len(convert_in_out_intermediate_files)))
     if any(results):
-        print('Errors eccured:')
+        print('Errors occured:')
         [print(e) for e in results if e]
 
