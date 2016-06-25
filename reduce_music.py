@@ -144,10 +144,13 @@ class PathCalcualtor:
                 for id_number in range(num)]
 
     def calc_new_music_files(self, music_files):
+        unconverted_targets = [self.join_to_target(f) for f in music_files]
+        converted_targets = [self.join_to_target(self.to_m4a_filename(f))
+                for f in music_files]
+        # files that already an existing unconverted or converted target
+        # are ignored.
         return [f[0] for f in
-            zip(music_files, [self.join_to_target(f) for f in music_files],
-            [self.join_to_target(self.to_m4a_filename(f))
-                for f in music_files])
+            zip(music_files, unconverted_targets, converted_targets)
             if not any((os.path.exists(x) for x in f[1:]))]
 
 
