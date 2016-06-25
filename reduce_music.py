@@ -142,6 +142,13 @@ class PathCalcualtor:
         return [os.path.join(self.temp_dir, 'intermediate%d.caf' % id_number)
                 for id_number in range(num)]
 
+    def calc_new_music_files(self, music_files):
+        return [f[0] for f in
+            zip(music_files, [self.join_to_target(f) for f in music_files],
+            [self.join_to_target(self.to_m4a_filename(f))
+                for f in music_files])
+            if not any((os.path.exists(x) for x in f[1:]))]
+
     @staticmethod
     def strip_existing_targets(in_list):
         return [x for x in in_list if not os.path.isfile(list(x)[1])]
@@ -155,11 +162,7 @@ if __name__ == '__main__':
     music_files, subdirs = path_calc.analyze_directory_structure()
   
     # files that seem to have been added to the library since the last run
-    new_music_files = [f[0] for f in
-        zip(music_files, [path_calc.join_to_target(f) for f in music_files],
-        [path_calc.join_to_target(path_calc.to_m4a_filename(f))
-            for f in music_files])
-        if not any((os.path.exists(x) for x in f[1:]))]
+    new_music_files = path_calc.calc_new_music_files(music_files)
 
     results = map_to_pool(needs_converting, new_music_files)
     
