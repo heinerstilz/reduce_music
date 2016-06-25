@@ -56,6 +56,17 @@ class PathCalculatorGetTargetOutfilesTest(PathCalculatorTestFixture):
         self.failUnlessEqual(2, len(target_outf)) 
 
 
+class PathCalculatorGetintermediateFilesTest(PathCalculatorTestFixture):
+
+    def test(self):
+        intermediate_files = self.path_calc.calc_intermediate_files(4)
+        self.failUnlessEqual(4, len(intermediate_files))
+        self.failUnlessEqual(os.path.join(self.path_calc.temp_dir,
+            'intermediate0.caf'), intermediate_files[0])
+        self.failUnlessEqual(os.path.join(self.path_calc.temp_dir,
+            'intermediate3.caf'), intermediate_files[-1])
+
+
 if __name__ == '__main__':
     unittest.main()
 
