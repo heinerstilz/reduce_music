@@ -92,10 +92,11 @@ class PathCalcualtor:
                 print('Using default directory')
                 raise Exception()
         except Exception:
-            self.music_dir = 'Music/iTunes'
+            self.music_dir = os.path.join('Music', 'iTunes')
         self.music_extensions = ('.mp3', '.m4a', '.wav', '.aif')
+
         # TODO: give user an option to select dirs
-        self.target_dir = 'Music/Smaller'
+        self.target_dir = os.path.join('Music', 'Smaller')
         self.temp_dir = os.path.join(self.target_dir, 'tmp')
 
     
