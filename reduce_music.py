@@ -171,7 +171,8 @@ if __name__ == '__main__':
 
     convert_in_out_intermediate_files = path_calc.strip_existing_targets(
             zip(files_to_convert,
-                path_calc.get_target_outfiles_for(files_to_convert), intermediate_files))
+                path_calc.get_target_outfiles_for(files_to_convert, files_to_convert),
+                intermediate_files))
     
     [run_or_simulate(os.makedirs, d) for d in dirs_to_create]
     [run_or_simulate(shutil.copy, *p) for p in copy_infiles_outfiles]
