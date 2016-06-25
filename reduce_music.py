@@ -83,9 +83,18 @@ def convert_files_l(args):
 class PathCalcualtor:
 
     def __init__(self):
-        # global constants - TODO: give user an option to select dirs
-        self.music_dir = 'Music/iTunes'
+        # global constants 
+        try:
+            # will throw if option is not specified
+            self.music_dir = sys.argv[sys.argv.index('-m') + 1]
+            if not os.path.exists(self.music_dir):
+                print('path %s does not exist.' % self.music_dir)
+                print('Using default directory')
+                raise Exception()
+        except Exception:
+            self.music_dir = 'Music/iTunes'
         self.music_extensions = ('.mp3', '.m4a', '.wav', '.aif')
+        # TODO: give user an option to select dirs
         self.target_dir = 'Music/Smaller'
         self.temp_dir = os.path.join(self.target_dir, 'tmp')
 
