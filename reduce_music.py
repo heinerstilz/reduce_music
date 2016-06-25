@@ -80,6 +80,7 @@ def convert_files_l(args):
     
 
 class PathCalcualtor:
+
     def __init__(self):
         # global constants - TODO: give user an option to select dirs
         self.music_dir = 'Music/iTunes'
@@ -108,7 +109,7 @@ class PathCalcualtor:
                 subdirs_to_create.append(my_dir)
         return music_files, subdirs_to_create
 
-    def get_outfile_for(self, in_file):
+    def get_outfile_for(self, in_file, files_to_convert):
         if not in_file.lower().endswith(self.music_extensions):
             raise NotAMusicFileException()
         if in_file in files_to_convert:
@@ -116,8 +117,9 @@ class PathCalcualtor:
         else:
             return in_file
     
-    def get_target_outfiles_for(self, l):
-        return [self.join_to_target(self.get_outfile_for(f)) for f in l]
+    def get_target_outfiles_for(self, l, files_to_convert):
+        return [self.join_to_target(self.get_outfile_for(f, files_to_convert))
+                for f in l]
 
     @staticmethod
     def strip_existing_targets(in_list):
@@ -144,7 +146,8 @@ if __name__ == '__main__':
     files_to_copy = [f for f in new_music_files if not f in files_to_convert]
     
     copy_infiles_outfiles = path_calc.strip_existing_targets(
-            zip(files_to_copy, path_calc.get_target_outfiles_for(files_to_copy)))
+            zip(files_to_copy, path_calc.get_target_outfiles_for(
+                files_to_copy, files_to_convert)))
 
     # intermediate files are stored here.
     temp_dir = os.path.join(target_dir, 'tmp')
