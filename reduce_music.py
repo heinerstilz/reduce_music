@@ -4,7 +4,7 @@
 # converts all music in Music/iTunes to smaller AAC files
 # into Music/Smaller, preserving directory structure
 # and of course the original files.
-# Three CPU cores are used (why only three?)
+# All CPU cores are used
 # Files with a bitrate <= 130 kbps are not converted but copied.
 #
 # Options:
@@ -39,7 +39,8 @@ def needs_converting(in_file):
     return int(re.search(pattern, aifinfo_output).group(1)) > 130000 
 
 def map_to_pool(func, data):
-    pool = multiprocessing.Pool(3) # why not use all cores?
+    # TODO: user option to limit used number of cores
+    pool = multiprocessing.Pool(multiprocessing.cpu_count())
     results = pool.map(func, data)
     pool.close()
     pool.join()
