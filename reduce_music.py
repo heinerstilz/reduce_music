@@ -108,6 +108,21 @@ class PathCalcualtor:
                 subdirs_to_create.append(my_dir)
         return music_files, subdirs_to_create
 
+    def get_outfile_for(self, in_file):
+        if not in_file.lower().endswith(self.music_extensions):
+            raise NotAMusicFileException()
+        if in_file in files_to_convert:
+            return self.to_m4a_filename(in_file)
+        else:
+            return in_file
+    
+    def get_target_outfiles_for(self, l):
+        return [self.join_to_target(self.get_outfile_for(f)) for f in l]
+
+    @staticmethod
+    def strip_existing_targets(in_list):
+        return [x for x in in_list if not os.path.isfile(list(x)[1])]
+   
 
 # main function is definitely too long and hard to read with interleaved
 # function defs and other statements. I should split that up
@@ -128,22 +143,8 @@ if __name__ == '__main__':
     files_to_convert = [f[1] for f in zip(results, new_music_files) if f[0]]
     files_to_copy = [f for f in new_music_files if not f in files_to_convert]
     
-    def get_outfile_for(in_file):
-        if not in_file.lower().endswith(music_extensions):
-            raise NotAMusicFileException()
-        if in_file in files_to_convert:
-            return path_calc.to_m4a_filename(in_file)
-        else:
-            return in_file
-    
-    def get_target_outfiles_for(l):
-        return [path_calc.join_to_target(get_outfile_for(f)) for f in l]
-
-    def strip_existing_targets(in_list):
-        return [x for x in in_list if not os.path.isfile(list(x)[1])]
-   
-    copy_infiles_outfiles = strip_existing_targets(
-            zip(files_to_copy, get_target_outfiles_for(files_to_copy)))
+    copy_infiles_outfiles = path_calc.strip_existing_targets(
+            zip(files_to_copy, path_calc.get_target_outfiles_for(files_to_copy)))
 
     # intermediate files are stored here.
     temp_dir = os.path.join(target_dir, 'tmp')
@@ -156,9 +157,9 @@ if __name__ == '__main__':
         'intermediate%d.caf' % id_number)
         for id_number in range(len(files_to_convert))]
 
-    convert_in_out_intermediate_files = strip_existing_targets(
+    convert_in_out_intermediate_files = path_calc.strip_existing_targets(
             zip(files_to_convert,
-                get_target_outfiles_for(files_to_convert), intermediate_files))
+                path_calc.get_target_outfiles_for(files_to_convert), intermediate_files))
     
     [run_or_simulate(os.makedirs, d) for d in dirs_to_create]
     [run_or_simulate(shutil.copy, *p) for p in copy_infiles_outfiles]
