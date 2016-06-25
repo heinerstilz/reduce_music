@@ -87,6 +87,8 @@ class PathCalcualtor:
         self.music_dir = 'Music/iTunes'
         self.music_extensions = ('.mp3', '.m4a', '.wav', '.aif')
         self.target_dir = 'Music/Smaller'
+        self.temp_dir = os.path.join(self.target_dir, 'tmp')
+
     
     @staticmethod
     def to_m4a_filename(path):
@@ -150,14 +152,11 @@ if __name__ == '__main__':
             zip(files_to_copy, path_calc.get_target_outfiles_for(
                 files_to_copy, files_to_convert)))
 
-    # intermediate files are stored here.
-    temp_dir = os.path.join(target_dir, 'tmp')
-
     dirs_to_create = [x for x in map(
         path_calc.join_to_target, subdirs_to_create)
-            + [temp_dir] if not os.path.isdir(x)]
+            + [path_calc.temp_dir] if not os.path.isdir(x)]
     
-    intermediate_files = [os.path.join(temp_dir,
+    intermediate_files = [os.path.join(path_calc.temp_dir,
         'intermediate%d.caf' % id_number)
         for id_number in range(len(files_to_convert))]
 
