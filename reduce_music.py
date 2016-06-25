@@ -168,26 +168,23 @@ if __name__ == '__main__':
     
     files_to_convert = [f[1] for f in zip(results, new_music_files) if f[0]]
     files_to_copy = [f for f in new_music_files if not f in files_to_convert]
-    
-    copy_infiles_outfiles = zip(files_to_copy, path_calc.get_target_outfiles_for(
-                files_to_copy, files_to_convert))
+   
+    dirs_to_create = path_calc.calc_dirs_to_create(subdirs)
+    [run_or_simulate(os.makedirs, d) for d in dirs_to_create]
+
+    copy_targets = path_calc.get_target_outfiles_for(
+            files_to_copy, files_to_convert)
+    [run_or_simulate(shutil.copy, *p) for p in zip(files_to_copy, copy_targets)]
 
     intermediate_files = path_calc.calc_intermediate_files(
             len(files_to_convert))
-
-    convert_in_out_intermediate_files = zip(files_to_convert,
-                path_calc.get_target_outfiles_for(files_to_convert, files_to_convert),
-                intermediate_files)
-
-    dirs_to_create = path_calc.calc_dirs_to_create(subdirs)
-    
-    [run_or_simulate(os.makedirs, d) for d in dirs_to_create]
-    [run_or_simulate(shutil.copy, *p) for p in copy_infiles_outfiles]
-    
-    results = map_to_pool(convert_files_l, convert_in_out_intermediate_files)
+    conversion_targets = path_calc.get_target_outfiles_for(
+            files_to_convert, files_to_convert)
+    results = map_to_pool(convert_files_l,
+            zip(files_to_convert, conversion_targets, intermediate_files))
     
     print('%d files copied - %d files converted.'
-            %(len(copy_infiles_outfiles), len(convert_in_out_intermediate_files)))
+            %(len(files_to_copy), len(files_to_convert)))
     if any(results):
         print('Errors occured:')
         [print(e) for e in results if e]
