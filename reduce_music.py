@@ -169,7 +169,7 @@ class PathCalcualtor:
             return in_file
     
     # Computes full target path for each file in l.
-    def get_target_outfiles_for(self, l, files_to_convert):
+    def calc_target_paths_for(self, l, files_to_convert):
         return [self.join_to_target(self.get_outfile_for(f, files_to_convert))
                 for f in l]
 
@@ -209,13 +209,13 @@ if __name__ == '__main__':
     dirs_to_create = path_calc.calc_dirs_to_create(subdirs)
     [makedirs(d) for d in dirs_to_create]
 
-    copy_targets = path_calc.get_target_outfiles_for(
+    copy_targets = path_calc.calc_target_paths_for(
             files_to_copy, files_to_convert)
     [copy(*p) for p in zip(files_to_copy, copy_targets)]
 
     intermediate_files = path_calc.calc_intermediate_files(
             len(files_to_convert))
-    conversion_targets = path_calc.get_target_outfiles_for(
+    conversion_targets = path_calc.calc_target_paths_for(
             files_to_convert, files_to_convert)
     results = map_to_pool(convert_files_l,
             zip(files_to_convert, conversion_targets, intermediate_files))

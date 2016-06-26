@@ -47,7 +47,7 @@ class PathCalculatorGetOutfileTest(PathCalculatorTestFixture):
 class PathCalculatorGetTargetOutfilesTest(PathCalculatorTestFixture):
 
     def test(self):
-        target_outf = self.path_calc.get_target_outfiles_for(
+        target_outf = self.path_calc.calc_target_paths_for(
                 ['foo.mp3', 'bar.mp3'], ['bar.mp3'])
         self.failUnless(os.path.join(self.path_calc.target_dir, 'bar.m4a')
                 in target_outf)
