@@ -54,6 +54,14 @@ def makedirs(*args):
 def copy(*args):
     return shutil.copy(*args)
 
+def map_to_pool(func, data):
+    # TODO: user option to limit used number of cores
+    pool = multiprocessing.Pool(multiprocessing.cpu_count())
+    results = pool.map(func, data)
+    pool.close()
+    pool.join()
+    return results
+
 # uses Apple's afinfo utility and parses its output to
 # decide whether an audio file's output has a bitrate
 # large enough to justify converting.
@@ -67,14 +75,6 @@ def needs_converting(in_file):
     aifinfo_output = subprocess.check_output(['afinfo', in_file])
     pattern = 'bit rate: ([0-9]+) bits per second'
     return int(re.search(pattern, aifinfo_output).group(1)) > 130000 
-
-def map_to_pool(func, data):
-    # TODO: user option to limit used number of cores
-    pool = multiprocessing.Pool(multiprocessing.cpu_count())
-    results = pool.map(func, data)
-    pool.close()
-    pool.join()
-    return results
 
 # uses Apple's afconvert command line utility to convert an audio
 # file to an intermediate file, and then to an AAC result file.
