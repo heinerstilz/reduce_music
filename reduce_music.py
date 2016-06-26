@@ -5,9 +5,11 @@
 # into Music/Smaller, preserving directory structure
 # and of course the original files.
 # All CPU cores are used
-# Files with a bitrate <= 130 kbps are not converted but copied.
+# Files with a bitrate <= 130 kbps are not converted but copied
+# to save time and avoid the worst reconversion losses.
 #
 # Options:
+# -m <MusicDir> : convert music from <MusicDir>/ instead of Music/iTunes
 # -n : simulate only, do not convert any files.
 
 from __future__ import print_function
@@ -53,6 +55,7 @@ def makedirs(*args):
 @run_or_simulate
 def copy(*args):
     return shutil.copy(*args)
+
 
 def map_to_pool(func, data):
     # TODO: user option to limit used number of cores
@@ -139,6 +142,8 @@ class PathCalcualtor:
     def join_to_target(self, f):
         return os.path.join(self.target_dir, f)
 
+    # finds music files and subdirectories containing those
+    # in self.music_dir.
     def analyze_directory_structure(self):
         music_files = []
         subdirs_to_create = []
@@ -153,6 +158,8 @@ class PathCalcualtor:
                 subdirs_to_create.append(my_dir)
         return music_files, subdirs_to_create
 
+    # Changes the extension to 'm4a' if in_file is in files_to_convert.
+    # Identity otherwise.
     def get_outfile_for(self, in_file, files_to_convert):
         if not in_file.lower().endswith(self.music_extensions):
             raise NotAMusicFileException()
@@ -161,6 +168,7 @@ class PathCalcualtor:
         else:
             return in_file
     
+    # Computes full target path for each file in l.
     def get_target_outfiles_for(self, l, files_to_convert):
         return [self.join_to_target(self.get_outfile_for(f, files_to_convert))
                 for f in l]
