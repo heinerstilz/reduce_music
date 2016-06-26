@@ -185,8 +185,6 @@ class PathCalcualtor:
             if not any((os.path.exists(x) for x in f[1:]))]
 
 
-# main function is definitely too long and hard to read with interleaved
-# function defs and other statements. I should split that up
 if __name__ == '__main__':
 
     path_calc = PathCalcualtor()
