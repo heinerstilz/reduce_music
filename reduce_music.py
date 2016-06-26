@@ -24,6 +24,8 @@ class NotAMusicFileException(Exception):
     pass
 
 
+# makes it convenient for client code to run certain functions
+# conditionally
 def run_or_simulate(func):
 
     @functools.wraps(func)
@@ -55,6 +57,11 @@ def copy(*args):
 # uses Apple's afinfo utility and parses its output to
 # decide whether an audio file's output has a bitrate
 # large enough to justify converting.
+# More on afinfo:
+# http://osxdaily.com/2010/10/19/get-mp3-file-info-on-mac
+# or, on a Mac, afinfo -h
+# I just noticed there is a xml output option...
+# Wouldn't it be more stable to use that??
 def needs_converting(in_file):
     print('calling afinfo on %s' % in_file)
     aifinfo_output = subprocess.check_output(['afinfo', in_file])
@@ -71,6 +78,10 @@ def map_to_pool(func, data):
 
 # uses Apple's afconvert command line utility to convert an audio
 # file to an intermediate file, and then to an AAC result file.
+# See
+#http://images.apple.com/itunes/mastered-for-itunes/docs/mastered_for_itunes.pdf
+# on afconvert options and how to use it with an intermediate file.
+# Or, on a Mac, type afconvert -h
 def convert_files(in_file, out_file, intermediate_file):
     try:
         print('calling afconvert on %s' % in_file)
