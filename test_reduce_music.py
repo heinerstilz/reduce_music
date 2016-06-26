@@ -1,5 +1,8 @@
 #!/usr/bin/python2
 # test_reduce_music.py
+#
+# Heiner Stilz 2015
+# heinerstilz@gmail.com
 
 import os
 import reduce_music

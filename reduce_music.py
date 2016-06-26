@@ -1,5 +1,9 @@
 #!/usr/bin/python2
 # reduce_music.py
+#
+# Heiner Stilz 2015
+# heinerstilz@gmail.com
+#
 # assuming you are in your home directory on OS X,
 # converts all music in Music/iTunes to smaller AAC files
 # into Music/Smaller, preserving directory structure
