@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 # test_reduce_music.py
 
 import os
