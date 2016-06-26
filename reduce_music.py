@@ -11,6 +11,7 @@
 # -n : simulate only, do not convert any files.
 
 from __future__ import print_function
+import functools
 import multiprocessing
 import os
 import re
@@ -22,11 +23,34 @@ import sys
 class NotAMusicFileException(Exception):
     pass
 
-def run_or_simulate(cmd, *args):
-    if '-n' in sys.argv:
-        print ('simulating call to %s with arguments %s' % (cmd, args))
-    else:
-        cmd(*args)
+
+def run_or_simulate(func):
+
+    @functools.wraps(func)
+    def decorate(*args):
+        if '-n' in sys.argv:
+            print ('simulating call to %s with arguments %s' % (func, args))
+        else:
+            func(*args)
+
+    return decorate
+
+
+@run_or_simulate
+def check_call(*args):
+    return subprocess.check_call(*args)
+
+@run_or_simulate
+def remove(*args):
+    return os.remove(*args)
+
+@run_or_simulate
+def makedirs(*args):
+    return os.makedirs(*args)
+
+@run_or_simulate
+def copy(*args):
+    return shutil.copy(*args)
 
 # uses Apple's afinfo utility and parses its output to
 # decide whether an audio file's output has a bitrate
@@ -50,20 +74,19 @@ def map_to_pool(func, data):
 def convert_files(in_file, out_file, intermediate_file):
     try:
         print('calling afconvert on %s' % in_file)
-        [run_or_simulate(x, y) for x, y in (
-            (subprocess.check_call, ['afconvert', in_file,
+        check_call(['afconvert', in_file,
             intermediate_file, '-d', '0', '-f', 'caff',
-            '--soundcheck-generate']),
+            '--soundcheck-generate'])
 
-            (subprocess.check_call, ['afconvert', intermediate_file,
+        check_call(['afconvert', intermediate_file,
             '-d', 'aach', '-f', 'm4af', '--soundcheck-read',
-            '-b', '80000', '-q', '127', '-s', '2', out_file]),
+            '-b', '80000', '-q', '127', '-s', '2', out_file])
 
-            (os.remove, intermediate_file))]
+        remove(intermediate_file)
     except subprocess.CalledProcessError as e:
         print('afconvert first run failed.')
         try:
-            run_or_simulate(subprocess.check_call, ['afconvert', in_file,
+            check_call(['afconvert', in_file,
                 out_file, '-d', 'aach', '-f', 'm4af',
                 '-b', '80000', '-q', '127', '-s', '2'])
         # why catch all exceptions here and only one above?
@@ -167,11 +190,11 @@ if __name__ == '__main__':
     files_to_copy = [f for f in new_music_files if not f in files_to_convert]
    
     dirs_to_create = path_calc.calc_dirs_to_create(subdirs)
-    [run_or_simulate(os.makedirs, d) for d in dirs_to_create]
+    [makedirs(d) for d in dirs_to_create]
 
     copy_targets = path_calc.get_target_outfiles_for(
             files_to_copy, files_to_convert)
-    [run_or_simulate(shutil.copy, *p) for p in zip(files_to_copy, copy_targets)]
+    [copy(*p) for p in zip(files_to_copy, copy_targets)]
 
     intermediate_files = path_calc.calc_intermediate_files(
             len(files_to_convert))
