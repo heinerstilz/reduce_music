@@ -8,13 +8,25 @@
 # converts all music in Music/iTunes to smaller AAC files
 # into Music/Smaller, preserving directory structure
 # and of course the original files.
-# All CPU cores are used
-# Files with a bitrate <= 130 kbps are not converted but copied
+# All CPU cores are used.
+# Files with a bit rate <= 130 kbps are not converted but copied
 # to save time and avoid the worst reconversion losses.
+# target bit rate is arount 80 kbps (yes, my old phone's memory
+# card WAS small).
+#
+# Tested with Python 2.7.10
 #
 # Options:
 # -m <MusicDir> : convert music from <MusicDir>/ instead of Music/iTunes
 # -n : simulate only, do not convert any files.
+#
+# TODO:
+# - more tests
+# - option to choose target bit rate
+# - option to choose conversion threshold
+# - option to choose temp and target dirs
+# - target folder structure is too deeply nested
+# - option to deactivate multiprocessing
 
 from __future__ import print_function
 import functools
@@ -32,6 +44,7 @@ class NotAMusicFileException(Exception):
 
 # makes it convenient for client code to run certain functions
 # conditionally
+# TODO: undecorate, just wrap the function calls and KISS
 def run_or_simulate(func):
 
     @functools.wraps(func)
@@ -61,8 +74,8 @@ def copy(*args):
     return shutil.copy(*args)
 
 
+# executes on func on the given argument lists in a multiprocessing pool.
 def map_to_pool(func, data):
-    # TODO: user option to limit used number of cores
     pool = multiprocessing.Pool(multiprocessing.cpu_count())
     results = pool.map(func, data)
     pool.close()
@@ -103,6 +116,8 @@ def convert_files(in_file, out_file, intermediate_file):
         remove(intermediate_file)
     except subprocess.CalledProcessError as e:
         print('afconvert first run failed.')
+        # in this case, most of the time it works
+        # without an intermediate file. No idea why.
         try:
             check_call(['afconvert', in_file,
                 out_file, '-d', 'aach', '-f', 'm4af',
@@ -172,7 +187,6 @@ class PathCalcualtor:
         else:
             return in_file
     
-    # Computes full target path for each file in l.
     def calc_target_paths_for(self, l, files_to_convert):
         return [self.join_to_target(self.get_outfile_for(f, files_to_convert))
                 for f in l]
@@ -213,6 +227,7 @@ if __name__ == '__main__':
     dirs_to_create = path_calc.calc_dirs_to_create(subdirs)
     [makedirs(d) for d in dirs_to_create]
 
+    # TODO: one might want to extract a method/function from here on...
     copy_targets = path_calc.calc_target_paths_for(
             files_to_copy, files_to_convert)
     [copy(*p) for p in zip(files_to_copy, copy_targets)]
