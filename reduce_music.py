@@ -158,7 +158,7 @@ class PathCalcualtor:
         (root, ext) = os.path.splitext(path)
         return root + '.m4a'
 
-    def join_to_target(self, f):
+    def to_target_dir(self, f):
         return os.path.join(self.target_dir, f)
 
     # finds music files and subdirectories containing those
@@ -188,11 +188,11 @@ class PathCalcualtor:
             return in_file
     
     def calc_target_paths_for(self, l, files_to_convert):
-        return [self.join_to_target(self.get_outfile_for(f, files_to_convert))
+        return [self.to_target_dir(self.get_outfile_for(f, files_to_convert))
                 for f in l]
 
     def calc_dirs_to_create(self, subdirs):
-        all_dirs = [x for x in map(self.join_to_target, subdirs)
+        all_dirs = [x for x in map(self.to_target_dir, subdirs)
                 + [self.temp_dir]]
         return [x for x in all_dirs if not os.path.isdir(x)]
 
@@ -201,8 +201,8 @@ class PathCalcualtor:
                 for id_number in range(num)]
 
     def calc_new_music_files(self, music_files):
-        unconverted_targets = [self.join_to_target(f) for f in music_files]
-        converted_targets = [self.join_to_target(self.to_m4a_filename(f))
+        unconverted_targets = [self.to_target_dir(f) for f in music_files]
+        converted_targets = [self.to_target_dir(self.to_m4a_filename(f))
                 for f in music_files]
         # files that already an existing unconverted or converted target
         # are ignored.

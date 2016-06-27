@@ -26,7 +26,7 @@ class PathCalculatorTargetExtensionTest(PathCalculatorTestFixture):
 class PathCalculatorTargetPathTest(PathCalculatorTestFixture):
 
     def test(self):
-        target_path = self.path_calc.join_to_target('baz.m4a')
+        target_path = self.path_calc.to_target_dir('baz.m4a')
         self.failUnlessEqual(os.path.join(self.path_calc.target_dir, 'baz.m4a'),
             target_path)
 
