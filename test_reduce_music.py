@@ -57,6 +57,7 @@ class PathCalculatorGetTargetOutfilesTest(PathCalculatorTestFixture):
         self.failUnless(os.path.join(self.path_calc.target_dir, 'foo.mp3')
                 in target_outf)
         self.failUnlessEqual(2, len(target_outf)) 
+        self.failUnlessEqual(2, 3) 
 
 
 class PathCalculatorGetintermediateFilesTest(PathCalculatorTestFixture):
